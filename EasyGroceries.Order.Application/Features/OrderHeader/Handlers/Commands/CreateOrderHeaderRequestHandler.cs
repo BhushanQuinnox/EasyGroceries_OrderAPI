@@ -35,7 +35,9 @@ namespace EasyGroceries.Order.Application.Features.OrderHeader.Handlers.Commands
             {
                 response.IsSuccess = false;
                 response.Status = (int)HttpStatusCode.BadRequest;
-                response.Message = "Validation failed while creating OrderHeader";
+                response.Message = validationResult.Errors.Any() ?
+                        validationResult.Errors.FirstOrDefault().ErrorMessage :
+                        "Validation failed while creating the order";
                 return response;
             }
 

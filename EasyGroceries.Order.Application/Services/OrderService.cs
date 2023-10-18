@@ -55,18 +55,20 @@ namespace EasyGroceries.Order.Application.Services
                 orderHeaderDto.OrderStatus = Domain.OrderStatusEnum.Pending;
                 orderHeaderDto.OrderDetails = _mapper.Map<IEnumerable<OrderDetailsDto>>(cartDto.CartDetails);
                 orderHeaderDto.OrderTotal = CalculateOrderTotal(orderHeaderDto.OrderTotal, orderHeaderDto.LoyaltyMembershipOpted);
-                await _mediator.Send(new CreateOrderHeaderRequest() { OrderHeaderDto = orderHeaderDto });
-                response.Result = orderHeaderDto;
-                response.Status = (int)HttpStatusCode.OK;
-                return response;
+                var result = await _mediator.Send(new CreateOrderHeaderRequest() { OrderHeaderDto = orderHeaderDto });
+                response.Result = result.Result;
+                response.Status = result.Status;
+                response.IsSuccess = result.IsSuccess;
+                response.Message = result.Message;
             }
             catch (Exception ex)
             {
                 response.Status = (int)HttpStatusCode.InternalServerError;
                 response.Message = ex.Message;
                 response.IsSuccess = false;
-                return response;
             }
+
+            return response;
         }
 
 
