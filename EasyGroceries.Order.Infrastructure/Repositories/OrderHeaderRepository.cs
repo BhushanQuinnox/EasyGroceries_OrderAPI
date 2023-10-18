@@ -1,7 +1,10 @@
-﻿using EasyGroceries.Order.Application.Contracts.Infrastructure;
+﻿using Dapper;
+using EasyGroceries.Order.Application.Contracts.Infrastructure;
 using EasyGroceries.Order.Domain;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,32 +13,42 @@ namespace EasyGroceries.Order.Infrastructure.Repositories
 {
     public class OrderHeaderRepository : IOrderHeaderRepository
     {
-        private static List<OrderHeader> _orderHeaderList = new List<OrderHeader>();
+        private readonly IConfiguration _configuration;
+        public OrderHeaderRepository(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
 
         public async Task Add(OrderHeader orderHeader)
         {
-            _orderHeaderList.Add(orderHeader);
+            var sql = "Insert into OrderHeader (OrderHeaderId, UserId, LoyaltyMembershipOpted, OrderTotal, OrderTime, OrderStatus) values (@OrderHeaderId, @UserId, @LoyaltyMembershipOpted, @OrderTotal, @OrderTime, @OrderStatus)";
+            using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+                var result = await connection.ExecuteAsync(sql, new
+                {
+                    OrderHeaderId = orderHeader.OrderHeaderId,
+                    UserId = orderHeader.UserId,
+                    LoyaltyMembershipOpted = orderHeader.LoyaltyMembershipOpted,
+                    OrderTotal = orderHeader.OrderTotal,
+                    OrderTime = orderHeader.OrderTime,
+                    OrderStatus = (int)orderHeader.OrderStatus
+                });
+
+                connection.Close();
+            }
+
         }
 
-        public Task Delete(OrderHeader orderHeader)
+        public async Task<OrderHeader> GetOrderHeaderByUserId(int id)
         {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadOnlyList<OrderHeader>> GetAllOrderHeaders()
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<OrderHeader> GetOrderHeaderByUserId(int userId)
-        {
-            var orderHeader = _orderHeaderList.FirstOrDefault(x => x.UserId == userId);
-            return orderHeader;
-        }
-
-        public Task Update(int id, OrderHeader orderHeader)
-        {
-            throw new NotImplementedException();
+            var sql = "SELECT * FROM OrderHeader WHERE UserId = @id";
+            using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+                var result = await connection.QuerySingleOrDefaultAsync<OrderHeader>(sql, new { id });
+                return result;
+            }
         }
     }
 }

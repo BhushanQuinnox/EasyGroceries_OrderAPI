@@ -1,7 +1,10 @@
-﻿using EasyGroceries.Order.Application.Contracts.Infrastructure;
+﻿using Dapper;
+using EasyGroceries.Order.Application.Contracts.Infrastructure;
 using EasyGroceries.Order.Domain;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,22 +13,54 @@ namespace EasyGroceries.Order.Infrastructure.Repositories
 {
     public class OrderDetailsRepository : IOrderDetailsRepository
     {
-        private static List<OrderDetails> _orderDetailsList = new List<OrderDetails>();
+        private readonly IConfiguration _configuration;
+
+        public OrderDetailsRepository(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+
 
         public async Task Add(OrderDetails orderDetails)
         {
-            _orderDetailsList.Add(orderDetails);
+            var sqlCommand = "Insert into OrderDetails (OrderDetailsId, OrderHeaderId, ProductId, ProductName, Price, Count) values (@OrderDetailsId, @OrderHeaderId, @ProductId, @ProductName, @Price, @Count)";
+            using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+                var result = await connection.ExecuteAsync(sqlCommand, new
+                {
+                    OrderDetailsId = orderDetails.OrderDetailsId,
+                    OrderHeaderId = orderDetails.OrderHeaderId,
+                    ProductId = orderDetails.ProductId,
+                    ProductName = orderDetails.ProductName,
+                    Price = orderDetails.Price,
+                    Count = orderDetails.Count,
+                });
+
+                connection.Close();
+            }
         }
 
         public async Task<IReadOnlyList<OrderDetails>> GetAllOrderDetails()
         {
-            return _orderDetailsList.ToList();
+            var sqlCommand = "SELECT * FROM OrderDetails";
+            using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+                var result = await connection.QueryAsync<OrderDetails>(sqlCommand);
+                return result.ToList();
+            }
         }
 
-        public async Task<IReadOnlyList<OrderDetails>> GetOrderDetailsByOrderHeaderId(int headerId)
+        public async Task<IReadOnlyList<OrderDetails>> GetOrderDetailsByOrderHeaderId(int id)
         {
-            var orderDetailsByHeaderId = _orderDetailsList.Where(x => x.OrderHeaderId == headerId).ToList();
-            return orderDetailsByHeaderId;
+            var sql = "SELECT * FROM OrderDetails WHERE OrderHeaderId = @id";
+            using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+                var result = await connection.QueryAsync<OrderDetails>(sql, new { id });
+                return result.ToList();
+            }
         }
     }
 }

@@ -10,10 +10,7 @@ namespace EasyGroceries.Order.Application.Contracts.Infrastructure
 {
     public interface IOrderHeaderRepository
     {
-        Task<IReadOnlyList<OrderHeader>> GetAllOrderHeaders();
-        Task<OrderHeader> GetOrderHeaderByUserId(int userId);
+        Task<OrderHeader> GetOrderHeaderByUserId(int id);
         Task Add(OrderHeader orderHeader);
-        Task Update(int id, OrderHeader orderHeader);
-        Task Delete(OrderHeader orderHeader);
     }
 }
