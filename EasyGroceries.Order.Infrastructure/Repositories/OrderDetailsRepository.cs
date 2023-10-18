@@ -41,6 +41,17 @@ namespace EasyGroceries.Order.Infrastructure.Repositories
             }
         }
 
+        public async Task AddOrderDetailsList(List<OrderDetails> orderDetailsLst)
+        {
+            var sqlCommand = "Insert into OrderDetails (OrderDetailsId, OrderHeaderId, ProductId, ProductName, Price, Count) values (@OrderDetailsId, @OrderHeaderId, @ProductId, @ProductName, @Price, @Count)";
+            using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+                var result = await connection.ExecuteAsync(sqlCommand, orderDetailsLst);
+                connection.Close();
+            }
+        }
+
         public async Task<IReadOnlyList<OrderDetails>> GetAllOrderDetails()
         {
             var sqlCommand = "SELECT * FROM OrderDetails";

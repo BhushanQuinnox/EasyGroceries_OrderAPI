@@ -12,5 +12,6 @@ namespace EasyGroceries.Order.Application.Contracts.Infrastructure
         Task<IReadOnlyList<OrderDetails>> GetAllOrderDetails();
         Task<IReadOnlyList<OrderDetails>> GetOrderDetailsByOrderHeaderId(int headerId);
         Task Add(OrderDetails orderDetails);
+        Task AddOrderDetailsList(List<OrderDetails> orderDetailsLst);
     }
 }

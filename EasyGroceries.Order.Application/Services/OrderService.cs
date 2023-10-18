@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using EasyGroceries.Order.Application.Contracts.Services;
 using EasyGroceries.Order.Application.DTOs;
+using EasyGroceries.Order.Application.Features.OrderDetails.Requests.Commands;
 using EasyGroceries.Order.Application.Features.OrderDetails.Requests.Queries;
 using EasyGroceries.Order.Application.Features.OrderHeader.Requests.Commands;
 using EasyGroceries.Order.Application.Features.OrderHeader.Requests.Queries;
@@ -32,7 +33,7 @@ namespace EasyGroceries.Order.Application.Services
             try
             {
                 OrderHeaderDto headerDto = await _mediator.Send(new GetOrderHeaderByUserIdRequest() { UserId = userId });
-                //headerDto.OrderDetails = await _mediator.Send(new GetOrderDetailsByHeaderIdRequest() { HeaderId = headerDto.OrderHeaderId });
+                headerDto.OrderDetails = await _mediator.Send(new GetOrderDetailsByHeaderIdRequest() { HeaderId = headerDto.OrderHeaderId });
                 response.Result = headerDto;
                 response.Status = (int)HttpStatusCode.OK;
             }
@@ -56,10 +57,16 @@ namespace EasyGroceries.Order.Application.Services
                 orderHeaderDto.OrderDetails = _mapper.Map<IEnumerable<OrderDetailsDto>>(cartDto.CartDetails);
                 orderHeaderDto.OrderTotal = CalculateOrderTotal(orderHeaderDto.OrderTotal, orderHeaderDto.LoyaltyMembershipOpted);
                 var result = await _mediator.Send(new CreateOrderHeaderRequest() { OrderHeaderDto = orderHeaderDto });
-                response.Result = result.Result;
-                response.Status = result.Status;
-                response.IsSuccess = result.IsSuccess;
-                response.Message = result.Message;
+
+                // TBD: Need to add OrderDetails in OrderDetails table here....TBD: Test the below change
+                if (result.IsSuccess)
+                {
+                    await _mediator.Send(new CreateOrderDetailsListRequest() { OrderDetailsDtoLst = orderHeaderDto.OrderDetails.ToList() });
+                    response.Result = result.Result;
+                    response.Status = result.Status;
+                    response.IsSuccess = result.IsSuccess;
+                    response.Message = result.Message;
+                }
             }
             catch (Exception ex)
             {
