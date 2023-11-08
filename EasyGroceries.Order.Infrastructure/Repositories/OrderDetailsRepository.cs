@@ -14,17 +14,19 @@ namespace EasyGroceries.Order.Infrastructure.Repositories
     public class OrderDetailsRepository : IOrderDetailsRepository
     {
         private readonly IConfiguration _configuration;
+        private readonly string _connectionString;
 
         public OrderDetailsRepository(IConfiguration configuration)
         {
             _configuration = configuration;
+            _connectionString = configuration.GetConnectionString("DefaultConnection");
         }
 
 
         public async Task Add(OrderDetails orderDetails)
         {
             var sqlCommand = "Insert into OrderDetails (OrderDetailsId, OrderHeaderId, ProductId, ProductName, Price, Count) values (@OrderDetailsId, @OrderHeaderId, @ProductId, @ProductName, @Price, @Count)";
-            using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            using (var connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
                 var result = await connection.ExecuteAsync(sqlCommand, new
@@ -44,7 +46,7 @@ namespace EasyGroceries.Order.Infrastructure.Repositories
         public async Task AddOrderDetailsList(List<OrderDetails> orderDetailsLst)
         {
             var sqlCommand = "Insert into OrderDetails (OrderDetailsId, OrderHeaderId, ProductId, ProductName, Price, Count) values (@OrderDetailsId, @OrderHeaderId, @ProductId, @ProductName, @Price, @Count)";
-            using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            using (var connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
                 var result = await connection.ExecuteAsync(sqlCommand, orderDetailsLst);
@@ -55,7 +57,7 @@ namespace EasyGroceries.Order.Infrastructure.Repositories
         public async Task<IReadOnlyList<OrderDetails>> GetAllOrderDetails()
         {
             var sqlCommand = "SELECT * FROM OrderDetails";
-            using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            using (var connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
                 var result = await connection.QueryAsync<OrderDetails>(sqlCommand);
@@ -66,7 +68,7 @@ namespace EasyGroceries.Order.Infrastructure.Repositories
         public async Task<IReadOnlyList<OrderDetails>> GetOrderDetailsByOrderHeaderId(int id)
         {
             var sql = "SELECT * FROM OrderDetails WHERE OrderHeaderId = @id";
-            using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            using (var connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
                 var result = await connection.QueryAsync<OrderDetails>(sql, new { id });

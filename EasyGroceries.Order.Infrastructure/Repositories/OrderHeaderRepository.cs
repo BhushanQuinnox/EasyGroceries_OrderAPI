@@ -14,15 +14,18 @@ namespace EasyGroceries.Order.Infrastructure.Repositories
     public class OrderHeaderRepository : IOrderHeaderRepository
     {
         private readonly IConfiguration _configuration;
+        private readonly string _connectionString;
+
         public OrderHeaderRepository(IConfiguration configuration)
         {
             _configuration = configuration;
+            _connectionString = configuration.GetConnectionString("DefaultConnection");
         }
 
         public async Task Add(OrderHeader orderHeader)
         {
             var sql = "Insert into OrderHeader (OrderHeaderId, UserId, LoyaltyMembershipOpted, OrderTotal, OrderTime, OrderStatus) values (@OrderHeaderId, @UserId, @LoyaltyMembershipOpted, @OrderTotal, @OrderTime, @OrderStatus)";
-            using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            using (var connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
                 var result = await connection.ExecuteAsync(sql, new
@@ -43,7 +46,7 @@ namespace EasyGroceries.Order.Infrastructure.Repositories
         public async Task<OrderHeader> GetOrderHeaderByUserId(int id)
         {
             var sql = "SELECT * FROM OrderHeader WHERE UserId = @id";
-            using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            using (var connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
                 var result = await connection.QuerySingleOrDefaultAsync<OrderHeader>(sql, new { id });
