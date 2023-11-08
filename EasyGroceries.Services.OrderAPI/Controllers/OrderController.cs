@@ -42,7 +42,7 @@ namespace EasyGroceries.Services.OrderAPI.Controllers
         }
 
         [HttpPost("GenerateShippingSlip")]
-        public async Task<ActionResult<ResponseDto<bool>>> GenerateShippingSlip([FromBody]OrderHeaderDto orderHeaderDto)
+        public async Task<ActionResult<ResponseDto<bool>>> GenerateShippingSlip([FromBody] OrderHeaderDto orderHeaderDto)
         {
             ResponseDto<bool> response = new ResponseDto<bool>();
             try

@@ -58,7 +58,6 @@ namespace EasyGroceries.Order.Application.Services
                 orderHeaderDto.OrderTotal = CalculateOrderTotal(orderHeaderDto.OrderTotal, orderHeaderDto.LoyaltyMembershipOpted);
                 var result = await _mediator.Send(new CreateOrderHeaderRequest() { OrderHeaderDto = orderHeaderDto });
 
-                // TBD: Need to add OrderDetails in OrderDetails table here....TBD: Test the below change
                 if (result.IsSuccess)
                 {
                     await _mediator.Send(new CreateOrderDetailsListRequest() { OrderDetailsDtoLst = orderHeaderDto.OrderDetails.ToList() });
