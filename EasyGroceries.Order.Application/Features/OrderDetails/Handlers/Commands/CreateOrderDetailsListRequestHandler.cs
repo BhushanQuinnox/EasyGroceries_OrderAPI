@@ -26,17 +26,10 @@ namespace EasyGroceries.Order.Application.Features.OrderDetails.Handlers.Command
 
         public async Task<bool> Handle(CreateOrderDetailsListRequest request, CancellationToken cancellationToken)
         {
-            try
-            {
-                var response = new ResponseDto<List<OrderDetailsDto>>();
-                var orderDetailsList = _mapper.Map<List<Domain.OrderDetails>>(request.OrderDetailsDtoLst);
-                await _orderDetailsRepository.AddOrderDetailsList(orderDetailsList);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                return false;
-            }
+            var response = new ResponseDto<List<OrderDetailsDto>>();
+            var orderDetailsList = _mapper.Map<List<Domain.OrderDetails>>(request.OrderDetailsDtoLst);
+            await _orderDetailsRepository.AddOrderDetailsList(orderDetailsList);
+            return true;
         }
     }
 }

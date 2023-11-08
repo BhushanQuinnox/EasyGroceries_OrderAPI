@@ -30,48 +30,29 @@ namespace EasyGroceries.Order.Application.Services
         public async Task<ResponseDto<OrderHeaderDto>> GetOrderByUserId(int userId)
         {
             ResponseDto<OrderHeaderDto> response = new ResponseDto<OrderHeaderDto>();
-            try
-            {
-                OrderHeaderDto headerDto = await _mediator.Send(new GetOrderHeaderByUserIdRequest() { UserId = userId });
-                headerDto.OrderDetails = await _mediator.Send(new GetOrderDetailsByHeaderIdRequest() { HeaderId = headerDto.OrderHeaderId });
-                response.Result = headerDto;
-                response.Status = (int)HttpStatusCode.OK;
-            }
-            catch (Exception ex)
-            {
-                response.IsSuccess = false;
-                response.Message = ex.Message;
-                response.Status = (int)HttpStatusCode.InternalServerError;
-            }
-
+            OrderHeaderDto headerDto = await _mediator.Send(new GetOrderHeaderByUserIdRequest() { UserId = userId });
+            headerDto.OrderDetails = await _mediator.Send(new GetOrderDetailsByHeaderIdRequest() { HeaderId = headerDto.OrderHeaderId });
+            response.Result = headerDto;
+            response.Status = (int)HttpStatusCode.OK;
             return response;
         }
 
         public async Task<ResponseDto<OrderHeaderDto>> CreateOrder(CartDto cartDto)
         {
             ResponseDto<OrderHeaderDto> response = new ResponseDto<OrderHeaderDto>();
-            try
-            {
-                OrderHeaderDto orderHeaderDto = _mapper.Map<OrderHeaderDto>(cartDto.CartHeader);
-                orderHeaderDto.OrderStatus = Domain.OrderStatusEnum.Pending;
-                orderHeaderDto.OrderDetails = _mapper.Map<IEnumerable<OrderDetailsDto>>(cartDto.CartDetails);
-                orderHeaderDto.OrderTotal = CalculateOrderTotal(orderHeaderDto.OrderTotal, orderHeaderDto.LoyaltyMembershipOpted);
-                var result = await _mediator.Send(new CreateOrderHeaderRequest() { OrderHeaderDto = orderHeaderDto });
+            OrderHeaderDto orderHeaderDto = _mapper.Map<OrderHeaderDto>(cartDto.CartHeader);
+            orderHeaderDto.OrderStatus = Domain.OrderStatusEnum.Pending;
+            orderHeaderDto.OrderDetails = _mapper.Map<IEnumerable<OrderDetailsDto>>(cartDto.CartDetails);
+            orderHeaderDto.OrderTotal = CalculateOrderTotal(orderHeaderDto.OrderTotal, orderHeaderDto.LoyaltyMembershipOpted);
+            var result = await _mediator.Send(new CreateOrderHeaderRequest() { OrderHeaderDto = orderHeaderDto });
 
-                if (result.IsSuccess)
-                {
-                    await _mediator.Send(new CreateOrderDetailsListRequest() { OrderDetailsDtoLst = orderHeaderDto.OrderDetails.ToList() });
-                    response.Result = result.Result;
-                    response.Status = result.Status;
-                    response.IsSuccess = result.IsSuccess;
-                    response.Message = result.Message;
-                }
-            }
-            catch (Exception ex)
+            if (result.IsSuccess)
             {
-                response.Status = (int)HttpStatusCode.InternalServerError;
-                response.Message = ex.Message;
-                response.IsSuccess = false;
+                await _mediator.Send(new CreateOrderDetailsListRequest() { OrderDetailsDtoLst = orderHeaderDto.OrderDetails.ToList() });
+                response.Result = result.Result;
+                response.Status = result.Status;
+                response.IsSuccess = result.IsSuccess;
+                response.Message = result.Message;
             }
 
             return response;

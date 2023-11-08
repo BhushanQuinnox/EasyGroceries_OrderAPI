@@ -45,17 +45,8 @@ namespace EasyGroceries.Services.OrderAPI.Controllers
         public async Task<ActionResult<ResponseDto<bool>>> GenerateShippingSlip([FromBody] OrderHeaderDto orderHeaderDto)
         {
             ResponseDto<bool> response = new ResponseDto<bool>();
-            try
-            {
-                await _messageBus.PublishMessage(orderHeaderDto, _configuration.GetValue<string>("TopicAndQueueNames:GenerateShippingSlipQueue"));
-                response.Result = true;
-            }
-            catch (Exception ex)
-            {
-                response.IsSuccess = false;
-                response.Message = ex.ToString();
-            }
-
+            await _messageBus.PublishMessage(orderHeaderDto, _configuration.GetValue<string>("TopicAndQueueNames:GenerateShippingSlipQueue"));
+            response.Result = true;
             return response;
         }
     }
