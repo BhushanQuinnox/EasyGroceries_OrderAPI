@@ -1,4 +1,5 @@
-﻿using Azure;
+﻿using System.Net;
+using Azure;
 using EasyGroceries.Order.Application.Contracts.MessageBus;
 using EasyGroceries.Order.Application.Contracts.Services;
 using EasyGroceries.Order.Application.DTOs;
@@ -42,11 +43,9 @@ namespace EasyGroceries.Services.OrderAPI.Controllers
         }
 
         [HttpPost("GenerateShippingSlip")]
-        public async Task<ActionResult<ResponseDto<bool>>> GenerateShippingSlip([FromBody] OrderHeaderDto orderHeaderDto)
+        public async Task<ActionResult<ResponseDto<string>>> GenerateShippingSlip([FromBody] ShippingInfoDto shippingInfoDto)
         {
-            ResponseDto<bool> response = new ResponseDto<bool>();
-            await _messageBus.PublishMessage(orderHeaderDto, _configuration.GetValue<string>("TopicAndQueueNames:GenerateShippingSlipQueue"));
-            response.Result = true;
+            ResponseDto<string> response = await _messageBus.PublishMessage(shippingInfoDto, _configuration.GetValue<string>("TopicAndQueueNames:GenerateShippingSlipQueue"));
             return response;
         }
     }
