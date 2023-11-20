@@ -42,6 +42,5 @@ public class GetOrderDetailsRequestHandlerTests
         // Assert
         _orderDetailsRepositoryMock.Verify(x => x.GetAllOrderDetails(), Times.Once);
         Assert.Equal(orderDetails.Count, result.Count);
-        Assert.Equal(orderDetails.First().ProductName, result.First().ProductName);
     }
 }

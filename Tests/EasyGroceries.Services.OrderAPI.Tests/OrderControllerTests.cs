@@ -86,29 +86,13 @@ public class OrderControllerTests
         _orderServiceMock.Setup(x => x.CreateOrder(It.IsAny<CartDto>()))
                             .ReturnsAsync(expectedResponse);
 
-        // Act
-        OrderController orderController = new OrderController(_orderServiceMock.Object, _messageBusMock.Object, _configurationMock.Object);
-        var actualResponse = await orderController.CreateOrder(cartDto);
-        var responseContent = actualResponse.Result as OkObjectResult;
-
-        // Assert
-        _orderServiceMock.Verify(x => x.CreateOrder(It.IsAny<CartDto>()), Times.Once);
-        Assert.NotNull(responseContent);
-    }
-
-    [Fact]
-    public async void GenerateSlip_Should_GenerateSlipSuccessfully()
-    {
-        // Arrange
-        Fixture fixture = new Fixture();
-        ShippingInfoDto shippingInfoDto = fixture.Create<ShippingInfoDto>();
-        ResponseDto<string> expectedResponse = new ResponseDto<string>()
+        ResponseDto<string> expectedMessageBusResponse = new ResponseDto<string>()
         {
             Result = "Shipping slip generated successfully"
         };
 
         _messageBusMock.Setup(x => x.PublishMessage(It.IsAny<object>(), It.IsAny<string>()))
-                            .ReturnsAsync(expectedResponse);
+                            .ReturnsAsync(expectedMessageBusResponse);
 
         var _configurationSection = new Mock<IConfigurationSection>();
         _configurationSection.Setup(x => x.Value).Returns("generateshippingslip");
@@ -117,11 +101,11 @@ public class OrderControllerTests
 
         // Act
         OrderController orderController = new OrderController(_orderServiceMock.Object, _messageBusMock.Object, _configurationMock.Object);
-        var actualResponse = await orderController.GenerateShippingSlip(shippingInfoDto);
-        var responseContent = actualResponse.Value.Result;
+        var actualResponse = await orderController.CreateOrder(cartDto);
+        var responseContent = actualResponse.Result as OkObjectResult;
 
         // Assert
-        _messageBusMock.Verify(x => x.PublishMessage(It.IsAny<object>(), It.IsAny<string>()), Times.Once);
-        Assert.Equal(expectedResponse.Result, responseContent);
+        _orderServiceMock.Verify(x => x.CreateOrder(It.IsAny<CartDto>()), Times.Once);
+        Assert.NotNull(responseContent);
     }
 }

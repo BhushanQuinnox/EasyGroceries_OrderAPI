@@ -14,13 +14,6 @@ namespace EasyGroceries.Order.Application.Validators
         {
             RuleFor(x => x.Product)
                 .NotNull();
-
-            RuleFor(x => x.Price)
-                .GreaterThan(0)
-                .WithMessage("{PropertyName} should be greater than 0");
-
-            RuleFor(x => x.ProductName)
-                .NotNull();
         }
     }
 }

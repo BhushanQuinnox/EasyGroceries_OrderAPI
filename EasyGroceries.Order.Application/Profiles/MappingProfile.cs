@@ -14,11 +14,12 @@ namespace EasyGroceries.Order.Application.Profiles
         public MappingProfile()
         {
             CreateMap<OrderHeaderDto, CartHeaderDto>()
-            .ForMember(dest => dest.CartTotal, u => u.MapFrom(src => src.OrderTotal)).ReverseMap();
+            .ForMember(dest => dest.CartTotal, u => u.MapFrom(src => src.OrderTotal))
+            .ForMember(dest => dest.CartHeaderId, u => u.MapFrom(src => src.OrderHeaderId)).ReverseMap();
 
             CreateMap<CartDetailsDto, OrderDetailsDto>()
-            .ForMember(dest => dest.ProductName, u => u.MapFrom(src => src.Product.Name))
-            .ForMember(dest => dest.Price, u => u.MapFrom(src => src.Product.Price));
+            .ForMember(dest => dest.OrderHeaderId, u => u.MapFrom(src => src.CartHeaderId))
+            .ForMember(dest => dest.OrderDetailsId, u => u.MapFrom(src => src.CartDetailsId));
 
             CreateMap<OrderDetailsDto, CartDetailsDto>();
 

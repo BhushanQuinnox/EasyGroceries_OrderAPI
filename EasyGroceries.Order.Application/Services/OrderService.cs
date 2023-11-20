@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using EasyGroceries.Order.Application.Contracts.MessageBus;
 using EasyGroceries.Order.Application.Contracts.Services;
 using EasyGroceries.Order.Application.DTOs;
 using EasyGroceries.Order.Application.Features.OrderDetails.Requests.Commands;
@@ -41,18 +42,21 @@ namespace EasyGroceries.Order.Application.Services
         {
             ResponseDto<OrderHeaderDto> response = new ResponseDto<OrderHeaderDto>();
             OrderHeaderDto orderHeaderDto = _mapper.Map<OrderHeaderDto>(cartDto.CartHeader);
-            orderHeaderDto.OrderStatus = Domain.OrderStatusEnum.Pending;
+            orderHeaderDto.OrderStatus = Domain.OrderStatusEnum.Processed;
             orderHeaderDto.OrderDetails = _mapper.Map<IEnumerable<OrderDetailsDto>>(cartDto.CartDetails);
             orderHeaderDto.OrderTotal = CalculateOrderTotal(orderHeaderDto.OrderTotal, orderHeaderDto.LoyaltyMembershipOpted);
             var result = await _mediator.Send(new CreateOrderHeaderRequest() { OrderHeaderDto = orderHeaderDto });
 
             if (result.IsSuccess)
             {
-                await _mediator.Send(new CreateOrderDetailsListRequest() { OrderDetailsDtoLst = orderHeaderDto.OrderDetails.ToList() });
-                response.Result = result.Result;
-                response.Status = result.Status;
-                response.IsSuccess = result.IsSuccess;
-                response.Message = result.Message;
+                var isSuccess = await _mediator.Send(new CreateOrderDetailsListRequest() { OrderDetailsDtoLst = orderHeaderDto.OrderDetails.ToList() });
+                if (isSuccess)
+                {
+                    response.Result = result.Result;
+                    response.Status = result.Status;
+                    response.IsSuccess = result.IsSuccess;
+                    response.Message = result.Message;
+                }
             }
 
             return response;

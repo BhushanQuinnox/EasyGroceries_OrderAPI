@@ -61,8 +61,8 @@ public class CreateOrderDetailsRequestHandlerTests
         var orderDetailsDto = fixture.Create<OrderDetailsDto>();
         var orderDetails = fixture.Create<OrderDetails>();
 
-        // Set Price to zero as it fail in validation
-        orderDetailsDto.Price = 0;
+        // Set Product to null as it fail in validation
+        orderDetailsDto.Product = null;
 
         ResponseDto<OrderDetailsDto> expectedResponse = new ResponseDto<OrderDetailsDto>()
         {

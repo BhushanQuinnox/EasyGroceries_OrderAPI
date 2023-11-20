@@ -7,7 +7,7 @@ namespace EasyGroceries.Order.Application.Validators
     {
         public ShippingInfoDtoValidator()
         {
-            RuleFor(x => x.Name)
+            RuleFor(x => x.CustomerInfo.Name)
                 .NotNull();
 
             RuleFor(x => x.UserId)
@@ -17,21 +17,21 @@ namespace EasyGroceries.Order.Application.Validators
                 .NotNull()
                 .GreaterThan(0);
 
-            RuleFor(x => x.StreetName)
+            RuleFor(x => x.CustomerInfo.StreetName)
                 .NotNull()
                 .Must(y => y.ToLower().Contains("street"))
                 .WithMessage("Streetname should contain street word");
 
-            RuleFor(x => x.ApartmentName)
+            RuleFor(x => x.CustomerInfo.ApartmentName)
                 .NotNull();
 
-            RuleFor(x => x.City)
+            RuleFor(x => x.CustomerInfo.City)
                 .NotNull();
 
-            RuleFor(x => x.Pincode)
+            RuleFor(x => x.CustomerInfo.Pincode)
                 .NotNull();
 
-            RuleFor(x => x.OrderDetails)
+            RuleFor(x => x.ProductDetails)
                 .NotNull()
                 .NotEmpty();
         }

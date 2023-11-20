@@ -39,14 +39,43 @@ namespace EasyGroceries.Services.OrderAPI.Controllers
         public async Task<ActionResult<ResponseDto<OrderHeaderDto>>> CreateOrder([FromBody] CartDto cartDto)
         {
             var response = await _orderService.CreateOrder(cartDto);
+            if (!response.IsSuccess)
+            {
+                return BadRequest(response);
+            }
+
+            var shippingSlipProcessMessage = await GenerateOrderShippingSlip(response.Result);
+            response.Message = shippingSlipProcessMessage;
             return Ok(response);
         }
 
-        [HttpPost("GenerateShippingSlip")]
-        public async Task<ActionResult<ResponseDto<string>>> GenerateShippingSlip([FromBody] ShippingInfoDto shippingInfoDto)
+        private async Task<string> GenerateOrderShippingSlip(OrderHeaderDto orderHeaderDto)
         {
-            ResponseDto<string> response = await _messageBus.PublishMessage(shippingInfoDto, _configuration.GetValue<string>("TopicAndQueueNames:GenerateShippingSlipQueue"));
-            return response;
+            ShippingInfoDto shippingInfo = new ShippingInfoDto();
+            shippingInfo.UserId = orderHeaderDto.UserId;
+            shippingInfo.OrderTotal = orderHeaderDto.OrderTotal;
+            shippingInfo.CustomerInfo = orderHeaderDto.CustomerInfo;
+            shippingInfo.ProductDetails = GetProductsByUserId(orderHeaderDto.UserId, orderHeaderDto.OrderDetails.ToList());
+            var result = await _messageBus.PublishMessage(shippingInfo, _configuration.GetValue<string>("TopicAndQueueNames:GenerateShippingSlipQueue"));
+            return result.Result;
         }
+
+        private List<ProductDto> GetProductsByUserId(int userId, List<OrderDetailsDto> OrderDetailsLst)
+        {
+            List<ProductDto> productDetails = new List<ProductDto>();
+            foreach (var orderDetail in OrderDetailsLst)
+            {
+                productDetails.Add(orderDetail.Product);
+            }
+
+            return productDetails;
+        }
+
+        // [HttpPost("GenerateShippingSlip")]
+        // public async Task<ActionResult<ResponseDto<string>>> GenerateShippingSlip([FromBody] ShippingInfoDto shippingInfoDto)
+        // {
+        //     ResponseDto<string> response = await _messageBus.PublishMessage(shippingInfoDto, _configuration.GetValue<string>("TopicAndQueueNames:GenerateShippingSlipQueue"));
+        //     return response;
+        // }
     }
 }

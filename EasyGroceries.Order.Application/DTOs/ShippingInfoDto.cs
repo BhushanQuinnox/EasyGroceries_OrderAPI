@@ -6,11 +6,7 @@ namespace EasyGroceries.Order.Application.DTOs
     {
         public int UserId { get; set; }
         public double OrderTotal { get; set; }
-        public string Name { get; set; }
-        public string ApartmentName { get; set; }
-        public string StreetName { get; set; }
-        public string City { get; set; }
-        public string Pincode { get; set; }
-        public IEnumerable<OrderDetailsDto> OrderDetails { get; set; }
+        public CustomerDto CustomerInfo { get; set; }
+        public IEnumerable<ProductDto> ProductDetails { get; set; }
     }
 }

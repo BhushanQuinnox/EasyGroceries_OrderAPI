@@ -16,7 +16,6 @@ namespace EasyGroceries.Order.Application.Services
     public class MessageBus : IMessageBus
     {
         private readonly IConfiguration _configuration;
-        private string connectionString = "Endpoint=sb://easygroceries.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=LHp8OWpHT9DrstgNvApGVQrCEed9xacew+ASbIk8VVY=";
 
         public MessageBus(IConfiguration configuration)
         {
@@ -54,5 +53,6 @@ namespace EasyGroceries.Order.Application.Services
             response.IsSuccess = true;
             return response;
         }
+
     }
 }
