@@ -24,7 +24,12 @@ namespace EasyGroceries.Order.Application.Profiles
             CreateMap<OrderDetailsDto, CartDetailsDto>();
 
             CreateMap<OrderHeader, OrderHeaderDto>().ReverseMap();
-            CreateMap<OrderDetailsDto, OrderDetails>().ReverseMap();
+
+            CreateMap<OrderDetailsDto, OrderDetails>()
+                .ForMember(dest => dest.Price, u => u.MapFrom(src => src.Product.Price))
+                .ForMember(dest => dest.Count, u => u.MapFrom(src => src.Product.Count));
+
+            CreateMap<OrderDetails, OrderDetailsDto>();
         }
     }
 }

@@ -1,9 +1,11 @@
 ﻿using Dapper;
 using EasyGroceries.Order.Application.Contracts.Infrastructure;
 using EasyGroceries.Order.Domain;
+using EasyGroceries.Order.Infrastructure.Contracts;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
@@ -13,67 +15,39 @@ namespace EasyGroceries.Order.Infrastructure.Repositories
 {
     public class OrderDetailsRepository : IOrderDetailsRepository
     {
-        private readonly IConfiguration _configuration;
-        private readonly string _connectionString;
+        private readonly IDapper _dapper;
 
-        public OrderDetailsRepository(IConfiguration configuration)
+        public OrderDetailsRepository(IDapper dapper)
         {
-            _configuration = configuration;
-            _connectionString = configuration.GetConnectionString("DefaultConnection");
+            _dapper = dapper;
         }
 
 
         public async Task Add(OrderDetails orderDetails)
         {
-            var sqlCommand = "Insert into OrderDetails (OrderDetailsId, OrderHeaderId, ProductId, ProductName, Price, Count) values (@OrderDetailsId, @OrderHeaderId, @ProductId, @ProductName, @Price, @Count)";
-            using (var connection = new SqlConnection(_connectionString))
-            {
-                connection.Open();
-                var result = await connection.ExecuteAsync(sqlCommand, new
-                {
-                    OrderDetailsId = orderDetails.OrderDetailsId,
-                    OrderHeaderId = orderDetails.OrderHeaderId,
-                    ProductId = orderDetails.ProductId,
-                    ProductName = orderDetails.ProductName,
-                    Price = orderDetails.Price,
-                    Count = orderDetails.Count,
-                });
-
-                connection.Close();
-            }
+            var query = "Insert into OrderDetails (OrderDetailsId, OrderHeaderId, ProductId, ProductName, Price, Count) values (@OrderDetailsId, @OrderHeaderId, @ProductId, @ProductName, @Price, @Count)";
+            await Task.FromResult(_dapper.Insert<OrderDetails>(query, orderDetails, commandType: CommandType.Text));
         }
 
         public async Task AddOrderDetailsList(List<OrderDetails> orderDetailsLst)
         {
-            var sqlCommand = "Insert into OrderDetails (OrderDetailsId, OrderHeaderId, ProductId, ProductName, Price, Count) values (@OrderDetailsId, @OrderHeaderId, @ProductId, @ProductName, @Price, @Count)";
-            using (var connection = new SqlConnection(_connectionString))
-            {
-                connection.Open();
-                var result = await connection.ExecuteAsync(sqlCommand, orderDetailsLst);
-                connection.Close();
-            }
+            var query = "Insert into OrderDetails (OrderDetailsId, OrderHeaderId, ProductId, ProductName, Price, Count) values (@OrderDetailsId, @OrderHeaderId, @ProductId, @ProductName, @Price, @Count)";
+            await Task.FromResult(_dapper.InsertList<List<OrderDetails>>(query, orderDetailsLst, commandType: CommandType.Text));
         }
 
         public async Task<IReadOnlyList<OrderDetails>> GetAllOrderDetails()
         {
-            var sqlCommand = "SELECT * FROM OrderDetails";
-            using (var connection = new SqlConnection(_connectionString))
-            {
-                connection.Open();
-                var result = await connection.QueryAsync<OrderDetails>(sqlCommand);
-                return result.ToList();
-            }
+            var query = "SELECT * FROM OrderDetails";
+            var orderDetailsList = await Task.FromResult(_dapper.GetAll<OrderDetails>(query, null, commandType: CommandType.Text));
+            return orderDetailsList;
         }
 
         public async Task<IReadOnlyList<OrderDetails>> GetOrderDetailsByOrderHeaderId(int id)
         {
-            var sql = "SELECT * FROM OrderDetails WHERE OrderHeaderId = @id";
-            using (var connection = new SqlConnection(_connectionString))
-            {
-                connection.Open();
-                var result = await connection.QueryAsync<OrderDetails>(sql, new { id });
-                return result.ToList();
-            }
+            var query = "SELECT * FROM OrderDetails";
+            var allOrderDetails = await Task.FromResult(_dapper.GetAll<OrderDetails>(query, null, commandType: CommandType.Text));
+            var orderDetailsById = allOrderDetails.FindAll(x => x.OrderHeaderId == id);
+            return orderDetailsById;
         }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using EasyGroceries.Order.Application.Contracts.Infrastructure;
+using EasyGroceries.Order.Infrastructure.Contracts;
+using EasyGroceries.Order.Infrastructure.DBHandler;
 using EasyGroceries.Order.Infrastructure.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -15,6 +17,7 @@ namespace EasyGroceries.Order.Infrastructure
         {
             services.AddScoped<IOrderHeaderRepository, OrderHeaderRepository>();
             services.AddScoped<IOrderDetailsRepository, OrderDetailsRepository>();
+            services.AddScoped<IDapper, DatabaseHandler>();
             return services;
         }
     }
